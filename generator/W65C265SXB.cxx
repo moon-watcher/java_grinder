@@ -5,7 +5,7 @@
  *     Web: http://www.mikekohn.net/
  * License: GPL
  *
- * Copyright 2014-2015 by Michael Kohn
+ * Copyright 2014-2017 by Michael Kohn
  *
  * W65C265SXB by Joe Davisson
  *
@@ -64,11 +64,15 @@ int W65C265SXB::open(const char *filename)
   fprintf(out, "lda #1\n");
   fprintf(out, "sta put_int_table + 8\n");
 
+  fprintf(out, "; set up processor stack\n");
+  fprintf(out, "  lda #0x8ff\n");
+  fprintf(out, "  tcs\n");
+
   return 0;
 }
 
 // terminal interface API
-int W65C265SXB::w65c265sxb_getChar()
+int W65C265SXB::sxb_getChar()
 {
   fprintf(out, "; getChar\n");
   fprintf(out, "  lda #0\n");
@@ -86,7 +90,7 @@ int W65C265SXB::w65c265sxb_getChar()
   return 0;
 }
 
-int W65C265SXB::w65c265sxb_putChar_C()
+int W65C265SXB::sxb_putChar_C()
 {
   POP();
   fprintf(out, "; putChar\n");
@@ -100,13 +104,13 @@ int W65C265SXB::w65c265sxb_putChar_C()
   return 0;
 }
 
-int W65C265SXB::w65c265sxb_getInt()
+int W65C265SXB::sxb_getInt()
 {
   fprintf(out, "; getInt\n");
   return -1;
 }
 
-int W65C265SXB::w65c265sxb_putInt_I()
+int W65C265SXB::sxb_putInt_I()
 {
   need_put_int = 1;
   fprintf(out, "; putInt\n");
@@ -116,13 +120,13 @@ int W65C265SXB::w65c265sxb_putInt_I()
   return 0;
 }
 
-int W65C265SXB::w65c265sxb_getString()
+int W65C265SXB::sxb_getString()
 {
   fprintf(out, "; getString\n");
   return -1;
 }
 
-int W65C265SXB::w65c265sxb_putString_X()
+int W65C265SXB::sxb_putString_X()
 {
   need_put_string = 1;
   fprintf(out, "  jsr put_string\n");
@@ -445,7 +449,7 @@ int W65C265SXB::ioport_getPortInputValue(int port)
 }
 
 // tone generator API
-int W65C265SXB::w65c265sxb_controlTones_IIZZ()
+int W65C265SXB::sxb_controlTones_IIZZ()
 {
 //  int control = (enable2 & 1) | ((enable2 & 1) << 1);
 
@@ -462,7 +466,7 @@ int W65C265SXB::w65c265sxb_controlTones_IIZZ()
   fprintf(out, "  phx\n");
   fprintf(out, "  tax\n");
   fprintf(out, "  sep #0x20\n");
-  fprintf(out, "  lda value1\n");
+  fprintf(out, "  lda.b value1\n");
   fprintf(out, "  jsr.l 0xe009\n");
   fprintf(out, "  rep #0x30\n");
   fprintf(out, "  plx\n");
